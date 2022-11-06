@@ -2,6 +2,9 @@ import type { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { PrismaClient } from "@prisma/client";
 import { formatResponse } from "../../utils/formatter";
+import jwt from "jsonwebtoken";
+import { env } from "process";
+
 const prisma = new PrismaClient();
 
 type SignRequest = Request<any, any, { email: string; password: string }>;
@@ -34,7 +37,14 @@ export const signController = async (req: SignRequest, res: Response) => {
     );
   }
 
-  res.json(
+  // @ts-ignore
+  delete user.password;
+
+  const token = jwt.sign({ id: user.id }, env.JWT_SECRET ?? "", {
+    expiresIn: 86400, // 24 hours
+  });
+
+  res.cookie("token", token).json(
     formatResponse({
       data: user,
     })

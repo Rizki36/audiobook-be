@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { AnyZodObject, ZodError } from "zod";
 import { formatResponse } from "./formatter";
+import jwt from "jsonwebtoken";
+import { env } from "process";
 
 export const validation =
   (schema: AnyZodObject) =>
@@ -14,14 +16,43 @@ export const validation =
       return next();
     } catch (error) {
       if (typeof error === "string") {
-        res.send(error);
+        res.status(400).send(error);
       } else if (error instanceof ZodError) {
         const resErr = formatResponse({
           errors: error.issues,
         });
-        res.json(resErr);
+        res.status(400).json(resErr);
       } else {
-        res.json(res);
+        res.status(400).json(res);
       }
     }
   };
+
+export const verifyToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const token = req.cookies?.token;
+
+  if (!token) {
+    res.status(403).json(
+      formatResponse({
+        message: "No token provided!",
+      })
+    );
+  }
+
+  // @ts-ignore
+  jwt.verify(token, env.JWT_SECRET ?? "", (err, decoded) => {
+    if (err) {
+      return res.status(401).send({
+        message: "Unauthorized!",
+      });
+    }
+
+    // @ts-ignore
+    req.userId = decoded.id;
+    next();
+  });
+};

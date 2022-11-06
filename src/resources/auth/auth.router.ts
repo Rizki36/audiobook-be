@@ -5,6 +5,6 @@ import { signSchema } from "./auth.validation";
 
 const router = Router();
 
-router.get("/sign", validation(signSchema), signController);
+router.post("/sign-in", validation(signSchema), signController);
 
 export default router;
