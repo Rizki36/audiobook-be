@@ -49,7 +49,7 @@ export const signController = async (req: SignRequest, res: Response) => {
 
   res.cookie("token", token).json(
     formatResponse({
-      data: user,
+      data: { user, token },
     })
   );
 };

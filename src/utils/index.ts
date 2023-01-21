@@ -46,9 +46,11 @@ export const verifyToken = async (
   // @ts-ignore
   jwt.verify(token, env.JWT_SECRET ?? "", (err, decoded) => {
     if (err) {
-      return res.status(401).send({
-        message: "Unauthorized!",
-      });
+      return res.status(401).json(
+        formatResponse({
+          message: "Unauthorized!",
+        })
+      );
     }
 
     // @ts-ignore
